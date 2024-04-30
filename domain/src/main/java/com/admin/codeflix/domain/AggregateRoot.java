@@ -1,8 +1,8 @@
 package com.admin.codeflix.domain;
 
-public class AggregateRoot<ID extends Identifier> extends Entity<ID> {
+public abstract class AggregateRoot<ID extends Identifier> extends Entity<ID> {
 
-    public AggregateRoot(final ID id) {
+    protected AggregateRoot(final ID id) {
         super(id);
     }
 }
