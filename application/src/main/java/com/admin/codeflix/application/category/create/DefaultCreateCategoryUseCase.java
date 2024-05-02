@@ -3,6 +3,7 @@ package com.admin.codeflix.application.category.create;
 import com.admin.codeflix.domain.category.Category;
 import com.admin.codeflix.domain.category.CategoryGateway;
 import com.admin.codeflix.domain.validation.handler.Notification;
+import io.vavr.control.Either;
 
 import java.util.Objects;
 
@@ -15,7 +16,7 @@ public class DefaultCreateCategoryUseCase extends CreateCategoryUseCase {
     }
 
     @Override
-    public CreateCategoryOutput execute(final CreateCategoryCommand aCommand) {
+    public Either<Notification, CreateCategoryOutput> execute(final CreateCategoryCommand aCommand) {
         final var aName = aCommand.name();
         final var aDescription = aCommand.description();
         final var isActive = aCommand.isActive();
