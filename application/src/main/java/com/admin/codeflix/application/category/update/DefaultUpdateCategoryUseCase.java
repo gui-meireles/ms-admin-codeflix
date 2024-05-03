@@ -28,9 +28,12 @@ public class DefaultUpdateCategoryUseCase extends UpdateCategoryUseCase {
         final var aDescription = aCommand.description();
         final var isActive = aCommand.isActive();
 
-        final var aCategory = this.categoryGateway.findById(anId).orElseThrow(notFound(anId));
+        final var aCategory = this.categoryGateway
+                .findById(anId)
+                .orElseThrow(notFound(anId));
 
         final var notification = Notification.create();
+
         aCategory.update(aName, aDescription, isActive)
                 .validate(notification);
 
