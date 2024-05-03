@@ -62,7 +62,7 @@ public class UpdateCategoryUseCaseTest {
                         && Objects.equals(expectedIsActive, aUpdatedCategory.isActive())
                         && Objects.equals(expectedId, aUpdatedCategory.getId())
                         && Objects.equals(aCategory.getCreatedAt(), aUpdatedCategory.getCreatedAt())
-                        && Objects.equals(aCategory.getUpdatedAt(), aUpdatedCategory.getUpdatedAt())
+                        && Objects.equals(aCategory.getUpdatedAt(), aUpdatedCategory.getUpdatedAt()) // TODO: Fix
                         && Objects.isNull(aUpdatedCategory.getDeletedAt())
         ));
     }
