@@ -5,6 +5,7 @@ import com.admin.codeflix.domain.category.CategoryGateway;
 import com.admin.codeflix.domain.category.CategoryID;
 import com.admin.codeflix.domain.category.CategorySearchQuery;
 import com.admin.codeflix.domain.pagination.Pagination;
+import com.admin.codeflix.infrastructure.category.persistence.CategoryJpaEntity;
 import com.admin.codeflix.infrastructure.category.persistence.CategoryRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,8 +21,8 @@ public class CategoryMySQLGateway implements CategoryGateway {
     }
 
     @Override
-    public Category create(Category aCategory) {
-        return null;
+    public Category create(final Category aCategory) {
+        return this.repository.save(CategoryJpaEntity.from(aCategory)).toAggregate();
     }
 
     @Override
