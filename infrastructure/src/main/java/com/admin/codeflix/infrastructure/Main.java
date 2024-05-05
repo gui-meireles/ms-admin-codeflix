@@ -1,9 +1,13 @@
 package com.admin.codeflix.infrastructure;
 
-public class Main {
-    public static void main(String[] args) {
-        System.out.println("Hello world!");
+import com.admin.codeflix.infrastructure.configuration.WebServerConfig;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-//        System.out.println(new UseCase().execute());
+@SpringBootApplication
+public class Main {
+
+    public static void main(String[] args) {
+        SpringApplication.run(WebServerConfig.class, args);
     }
 }
