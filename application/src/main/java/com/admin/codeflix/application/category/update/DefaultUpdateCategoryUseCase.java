@@ -4,14 +4,15 @@ import com.admin.codeflix.domain.category.Category;
 import com.admin.codeflix.domain.category.CategoryGateway;
 import com.admin.codeflix.domain.category.CategoryID;
 import com.admin.codeflix.domain.exceptions.DomainException;
-import com.admin.codeflix.domain.validation.Error;
+import com.admin.codeflix.domain.exceptions.NotFoundException;
 import com.admin.codeflix.domain.validation.handler.Notification;
 import io.vavr.control.Either;
 
 import java.util.Objects;
 import java.util.function.Supplier;
 
-import static io.vavr.API.*;
+import static io.vavr.API.Left;
+import static io.vavr.API.Try;
 
 public class DefaultUpdateCategoryUseCase extends UpdateCategoryUseCase {
 
@@ -47,8 +48,6 @@ public class DefaultUpdateCategoryUseCase extends UpdateCategoryUseCase {
     }
 
     private Supplier<DomainException> notFound(final CategoryID anId) {
-        return () -> DomainException.with(
-                new Error("Category with ID %s was not found".formatted(anId.getValue()))
-        );
+        return () -> NotFoundException.with(Category.class, anId);
     }
 }

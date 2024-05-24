@@ -17,7 +17,6 @@ import com.admin.codeflix.infrastructure.category.models.CreateCategoryApiInput;
 import com.admin.codeflix.infrastructure.category.models.UpdateCategoryApiInput;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.vavr.API;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -27,6 +26,9 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import java.util.Objects;
 
+import static io.vavr.API.Left;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -73,7 +75,7 @@ public class CategoryAPITest {
         response.andExpect(status().isCreated())
                 .andExpect(header().string("Location", "/categories/123"))
                 .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.id", Matchers.equalTo("123")));
+                .andExpect(jsonPath("$.id", equalTo("123")));
 
         verify(createCategoryUseCase, times(1)).execute(argThat(cmd ->
                 Objects.equals(expectedName, cmd.name())
@@ -93,7 +95,7 @@ public class CategoryAPITest {
         final var aInput = new CreateCategoryApiInput(expectedName, expectedDescription, expectedIsActive);
 
         when(createCategoryUseCase.execute(any()))
-                .thenReturn(API.Left(Notification.create(new Error(expectedMessage))));
+                .thenReturn(Left(Notification.create(new Error(expectedMessage))));
 
         // when
         final var request = MockMvcRequestBuilders.post("/categories")
@@ -105,10 +107,10 @@ public class CategoryAPITest {
 
         // then
         response.andExpect(status().isUnprocessableEntity())
-                .andExpect(header().string("Location", Matchers.nullValue()))
+                .andExpect(header().string("Location", nullValue()))
                 .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.errors", Matchers.hasSize(1)))
-                .andExpect(jsonPath("$.errors[0].message", Matchers.equalTo(expectedMessage)));
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].message", equalTo(expectedMessage)));
 
         verify(createCategoryUseCase, times(1)).execute(argThat(cmd ->
                 Objects.equals(expectedName, cmd.name())
@@ -140,11 +142,11 @@ public class CategoryAPITest {
 
         // then
         response.andExpect(status().isUnprocessableEntity())
-                .andExpect(header().string("Location", Matchers.nullValue()))
+                .andExpect(header().string("Location", nullValue()))
                 .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
-                .andExpect(jsonPath("$.message", Matchers.equalTo(expectedMessage)))
-                .andExpect(jsonPath("$.errors", Matchers.hasSize(1)))
-                .andExpect(jsonPath("$.errors[0].message", Matchers.equalTo(expectedMessage)));
+                .andExpect(jsonPath("$.message", equalTo(expectedMessage)))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].message", equalTo(expectedMessage)));
 
         verify(createCategoryUseCase, times(1)).execute(argThat(cmd ->
                 Objects.equals(expectedName, cmd.name())
@@ -178,13 +180,13 @@ public class CategoryAPITest {
         // then
         response.andExpect(status().isOk())
                 .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
-                        .andExpect(jsonPath("$.id", Matchers.equalTo(expectedId)))
-                        .andExpect(jsonPath("$.name", Matchers.equalTo(expectedName)))
-                        .andExpect(jsonPath("$.description", Matchers.equalTo(expectedDescription)))
-                        .andExpect(jsonPath("$.is_active", Matchers.equalTo(expectedIsActive)))
-                        .andExpect(jsonPath("$.created_at", Matchers.equalTo(aCategory.getCreatedAt().toString())))
-                        .andExpect(jsonPath("$.updated_at", Matchers.equalTo(aCategory.getUpdatedAt().toString())))
-                        .andExpect(jsonPath("$.deleted_at", Matchers.equalTo(aCategory.getDeletedAt())));
+                        .andExpect(jsonPath("$.id", equalTo(expectedId)))
+                        .andExpect(jsonPath("$.name", equalTo(expectedName)))
+                        .andExpect(jsonPath("$.description", equalTo(expectedDescription)))
+                        .andExpect(jsonPath("$.is_active", equalTo(expectedIsActive)))
+                        .andExpect(jsonPath("$.created_at", equalTo(aCategory.getCreatedAt().toString())))
+                        .andExpect(jsonPath("$.updated_at", equalTo(aCategory.getUpdatedAt().toString())))
+                        .andExpect(jsonPath("$.deleted_at", equalTo(aCategory.getDeletedAt())));
 
         verify(getCategoryByIdUseCase, times(1)).execute(eq(expectedId));
     }
@@ -208,7 +210,7 @@ public class CategoryAPITest {
 
         // then
         response.andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message", Matchers.equalTo(expectedErrorMessage)));
+                .andExpect(jsonPath("$.message", equalTo(expectedErrorMessage)));
     }
 
     @Test
@@ -234,8 +236,82 @@ public class CategoryAPITest {
                 .andDo(print());
 
         // then
-        response.andExpect(status().isNoContent())
-                .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE));
+        response.andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.id", equalTo(expectedId)));
+
+        verify(updateCategoryUseCase, times(1)).execute(argThat(cmd ->
+                Objects.equals(expectedName, cmd.name())
+                && Objects.equals(expectedDescription, cmd.description())
+                && Objects.equals(expectedIsActive, cmd.isActive())
+        ));
+    }
+
+    @Test
+    public void givenACommandWithInvalidID_whenCallsUpdateCategory_shouldReturnNotFoundException() throws Exception {
+        // given
+        final var expectedId = "not-found";
+        final var expectedName = "Filmes";
+        final var expectedDescription = "A categoria mais assistida";
+        final var expectedIsActive = true;
+
+        final var expectedErrorMessage = "Category with ID not-found was not found";
+
+        when(updateCategoryUseCase.execute(any()))
+                .thenThrow(NotFoundException.with(Category.class, CategoryID.from(expectedId)));
+
+        final var aCommand =
+                new UpdateCategoryApiInput(expectedName, expectedDescription, expectedIsActive);
+        // when
+        final var request = MockMvcRequestBuilders.put("/categories/{id}", expectedId)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aCommand));
+
+        final var response = this.mvc.perform(request)
+                .andDo(print());
+
+        // then
+        response.andExpect(status().isNotFound())
+                .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.message", equalTo(expectedErrorMessage)));
+
+        verify(updateCategoryUseCase, times(1)).execute(argThat(cmd ->
+                Objects.equals(expectedName, cmd.name())
+                && Objects.equals(expectedDescription, cmd.description())
+                && Objects.equals(expectedIsActive, cmd.isActive())
+        ));
+    }
+
+    @Test
+    public void givenAnInvalidName_whenCallsUpdateCategory_thenShouldReturnDomainException() throws Exception {
+        // given
+        final var expectedId = "123";
+        final var expectedName = "Filmes";
+        final var expectedDescription = "A categoria mais assistida";
+        final var expectedIsActive = true;
+
+        final var expectedMessage = "'name' should not be null";
+
+        when(updateCategoryUseCase.execute(any()))
+                .thenReturn(Left(Notification.create(new Error(expectedMessage))));
+
+        final var aCommand =
+                new UpdateCategoryApiInput(expectedName, expectedDescription, expectedIsActive);
+        // when
+        final var request = MockMvcRequestBuilders.put("/categories/{id}", expectedId)
+                .accept(MediaType.APPLICATION_JSON)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(mapper.writeValueAsString(aCommand));
+
+        final var response = this.mvc.perform(request)
+                .andDo(print());
+
+        // then
+        response.andExpect(status().isUnprocessableEntity())
+                .andExpect(header().string("Content-Type", MediaType.APPLICATION_JSON_VALUE))
+                .andExpect(jsonPath("$.errors", hasSize(1)))
+                .andExpect(jsonPath("$.errors[0].message", equalTo(expectedMessage)));
 
         verify(updateCategoryUseCase, times(1)).execute(argThat(cmd ->
                 Objects.equals(expectedName, cmd.name())
