@@ -8,6 +8,7 @@ import com.admin.codeflix.application.category.retrieve.get.GetCategoryByIdUseCa
 import com.admin.codeflix.domain.category.Category;
 import com.admin.codeflix.domain.category.CategoryID;
 import com.admin.codeflix.domain.exceptions.DomainException;
+import com.admin.codeflix.domain.exceptions.NotFoundException;
 import com.admin.codeflix.domain.validation.Error;
 import com.admin.codeflix.domain.validation.handler.Notification;
 import com.admin.codeflix.infrastructure.category.models.CreateCategoryApiInput;
@@ -186,15 +187,13 @@ public class CategoryAPITest {
     public void givenAnInvalidId_whenCallsGetCategory_shouldReturnNotFound() throws Exception {
         // given
         final var expectedErrorMessage = "Category with ID 123 was not found";
-        final var expectedId = CategoryID.from("123").getValue();
+        final var expectedId = CategoryID.from("123");
 
         when(getCategoryByIdUseCase.execute(any()))
-                .thenThrow(DomainException.with(
-                        new Error("Category with ID %s was not found".formatted(expectedId))
-                ));
+                .thenThrow(NotFoundException.with(Category.class, expectedId));
 
         // when
-        final var request = MockMvcRequestBuilders.get("/categories/{id}", expectedId)
+        final var request = MockMvcRequestBuilders.get("/categories/{id}", expectedId.getValue())
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.APPLICATION_JSON);
 

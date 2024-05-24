@@ -1,9 +1,9 @@
 package com.admin.codeflix.application.category.retrieve.get;
 
+import com.admin.codeflix.domain.category.Category;
 import com.admin.codeflix.domain.category.CategoryGateway;
 import com.admin.codeflix.domain.category.CategoryID;
-import com.admin.codeflix.domain.exceptions.DomainException;
-import com.admin.codeflix.domain.validation.Error;
+import com.admin.codeflix.domain.exceptions.NotFoundException;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -25,9 +25,7 @@ public class DefaultGetCategoryByIdUseCase extends GetCategoryByIdUseCase {
                 .orElseThrow(notFound(aCategoryId));
     }
 
-    private Supplier<DomainException> notFound(final CategoryID anId) {
-        return () -> DomainException.with(
-                new Error("Category with ID %s was not found".formatted(anId.getValue()))
-        );
+    private Supplier<NotFoundException> notFound(final CategoryID anId) {
+        return () -> NotFoundException.with(Category.class, anId);
     }
 }
